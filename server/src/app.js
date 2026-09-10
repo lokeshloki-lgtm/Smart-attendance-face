@@ -15,6 +15,7 @@ import aiRoutes from './routes/aiRoutes.js';
 import faceRoutes from './routes/faceRoutes.js';
 import departmentRoutes from './routes/departmentRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
+import connectDB from './config/db.js';
 import { FACE_DISTANCE_THRESHOLD } from './utils/faceMatching.js';
 import { getAttendanceLocationConfig } from './utils/location.js';
 
@@ -69,6 +70,16 @@ app.use(morgan('combined'));
 // Body parsing middleware
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Ensure serverless instances have an active database connection before API requests.
+app.use('/api', async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 // API Routes
 app.use('/api/auth', authRoutes);
