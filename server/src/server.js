@@ -7,6 +7,14 @@ import { startAbsenceScheduler } from './utils/absenceService.js';
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
+const requiredEnvironmentVariables = ['MONGO_URI', 'JWT_SECRET'];
+
+if (process.env.NODE_ENV === 'production') {
+  const missingVariables = requiredEnvironmentVariables.filter((name) => !process.env[name]);
+  if (missingVariables.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingVariables.join(', ')}`);
+  }
+}
 
 const startServer = async () => {
   try {
