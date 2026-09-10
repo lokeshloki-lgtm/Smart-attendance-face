@@ -82,6 +82,14 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/settings', settingsRoutes);
 
 // Health check
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'SmartAttend API is running',
+    healthCheck: '/api/health',
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
