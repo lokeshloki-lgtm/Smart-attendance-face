@@ -1,0 +1,118 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Manrope', sans-serif;
+  background: #f3f7f8;
+  color: #132a3a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  background-color: #f3f7f8;
+  background-image: linear-gradient(rgba(19, 42, 58, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(19, 42, 58, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+  transition: background 0.3s ease;
+}
+
+html.dark #root {
+  background-color: #0f2638;
+  background-image: linear-gradient(rgba(243, 247, 248, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(243, 247, 248, 0.04) 1px, transparent 1px);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #4a5568;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+/* Custom classes */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-effect-dark {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #2563eb 0%, #14b8a6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.font-mono-label {
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

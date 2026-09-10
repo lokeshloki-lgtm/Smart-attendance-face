@@ -1,0 +1,27 @@
+{
+  "name": "smart-attendance-system",
+  "version": "1.0.0",
+  "description": "Smart Attendance System: Secure Attendance Management Using Face Recognition and Computer Vision",
+  "private": true,
+  "scripts": {
+    "install-all": "cd server && npm install && cd ../client && npm install",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "build": "cd server && npm run build && cd ../client && npm run build",
+    "start": "cd server && npm start",
+    "seed": "cd server && node src/seed.js"
+  },
+  "keywords": [
+    "attendance",
+    "face-recognition",
+    "computer-vision",
+    "react",
+    "nodejs",
+    "mongodb",
+    "groq-api"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}

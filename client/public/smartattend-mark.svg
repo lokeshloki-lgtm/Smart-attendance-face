@@ -1,0 +1,15 @@
+<svg width="180" height="180" viewBox="190 90 390 370" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cyan" x1="210" y1="130" x2="570" y2="430" gradientUnits="userSpaceOnUse"><stop stop-color="#18F4E7"/><stop offset="1" stop-color="#0878F6"/></linearGradient>
+  </defs>
+  <path d="M232 204V164C232 140 251 121 275 121H319" stroke="url(#cyan)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M456 121H498C522 121 541 140 541 164V204" stroke="url(#cyan)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M232 320V360C232 384 251 403 275 403H319" stroke="url(#cyan)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M456 403H498C522 403 541 384 541 360V320" stroke="url(#cyan)" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="384" cy="246" r="86" fill="url(#cyan)"/>
+  <g stroke="white" stroke-width="3" opacity=".9"><path d="M384 184L325 217L325 286L384 322L443 286L443 217L384 184Z"/><path d="M384 184V322M325 217L443 286M443 217L325 286M325 217L384 246L443 217M325 286L384 246L443 286"/></g>
+  <g fill="white"><circle cx="384" cy="184" r="6"/><circle cx="325" cy="217" r="6"/><circle cx="325" cy="286" r="6"/><circle cx="384" cy="322" r="6"/><circle cx="443" cy="286" r="6"/><circle cx="443" cy="217" r="6"/><circle cx="384" cy="246" r="6"/></g>
+  <path d="M265 430C298 394 342 378 384 378C426 378 470 394 503 430L470 456H298L265 430Z" fill="url(#cyan)"/>
+  <circle cx="499" cy="405" r="45" fill="#1FE2D4" stroke="#061536" stroke-width="8"/>
+  <path d="M478 405L493 420L522 389" stroke="white" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
