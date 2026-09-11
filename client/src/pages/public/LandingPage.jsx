@@ -51,7 +51,7 @@ const highlights = [
 const LandingPage = () => {
   return (
     <div className="min-h-screen bg-[#0f2638] text-[#f3f7f8]">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0f2638]/90 backdrop-blur-sm">
+      <header className="landing-header sticky top-0 z-20 border-b border-white/10 bg-[#0f2638]/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link to="/" aria-label="SmartAttend home" className="flex items-center"><img src="/smartattend-mark.svg" alt="" className="block h-11 w-11 max-h-full max-w-full object-contain" /><span className="ml-2 text-xl font-bold">Smart<span className="text-cyan-300">Attend</span></span></Link>
 
@@ -80,21 +80,21 @@ const LandingPage = () => {
 
       <main>
         <section className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-20 md:grid-cols-2">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#14b8a6]/40 bg-[#14b8a6]/10 px-3 py-1 text-sm text-[#8ce7d6]">
+          <div className="landing-hero-copy">
+            <div className="landing-reveal landing-delay-1 mb-6 inline-flex items-center gap-2 rounded-full border border-[#14b8a6]/40 bg-[#14b8a6]/10 px-3 py-1 text-sm text-[#8ce7d6]">
               <CheckCircle2 className="h-4 w-4" />
               Smart attendance with face recognition
             </div>
 
-            <h1 className="max-w-xl text-4xl font-black leading-tight text-white md:text-6xl">
+            <h1 className="landing-reveal landing-delay-2 max-w-xl text-4xl font-black leading-tight text-white md:text-6xl">
               Secure attendance for modern teams.
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg text-slate-300">
+            <p className="landing-reveal landing-delay-3 mt-6 max-w-xl text-lg text-slate-300">
               Automate check-ins, monitor attendance in real time, and give admins instant visibility with AI-powered reporting.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="landing-reveal landing-delay-4 mt-8 flex flex-wrap gap-4">
               <Link
                 to="/login"
                 className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-6 py-3 font-semibold text-white shadow-lg shadow-[#2563eb]/20 transition hover:bg-[#1d4ed8]"
@@ -109,9 +109,9 @@ const LandingPage = () => {
               </Link>
             </div>
 
-            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="landing-reveal landing-delay-5 mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
               {stats.map((stat) => (
-                <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div key={stat.label} className="landing-stat rounded-2xl border border-white/10 bg-white/5 p-4">
                   <p className="text-2xl font-bold text-white">{stat.value}</p>
                   <p className="mt-1 text-xs text-slate-300">{stat.label}</p>
                 </div>
@@ -119,8 +119,8 @@ const LandingPage = () => {
             </div>
           </div>
 
-          <div className="relative">
-            <div className="relative overflow-hidden rounded-3xl border border-[#2d6d86] bg-[#123a52] p-6 shadow-2xl shadow-black/20">
+          <div className="landing-hero-visual relative">
+            <div className="landing-dashboard-card relative overflow-hidden rounded-3xl border border-[#2d6d86] bg-[#123a52] p-6 shadow-2xl shadow-black/20">
               <div className="rounded-2xl border border-[#2d6d86] bg-[#081f31] p-5">
                 <div className="flex items-center justify-between">
                   <div>
@@ -147,7 +147,7 @@ const LandingPage = () => {
                         <span>{item.value}</span>
                       </div>
                       <div className="h-2 w-full rounded-full bg-[#17384b]">
-                        <div className={`h-2 rounded-full ${item.color}`} style={{ width: `${item.value}%` }} />
+                        <div className={`landing-progress h-2 rounded-full ${item.color}`} style={{ '--progress': `${item.value}%` }} />
                       </div>
                     </div>
                   ))}
@@ -158,14 +158,14 @@ const LandingPage = () => {
         </section>
 
         <section id="features" className="mx-auto max-w-7xl px-6 py-20">
-          <div className="mb-12 text-center">
+          <div className="landing-section-heading mb-12 text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-300">Features</p>
             <h2 className="mt-3 text-3xl font-bold md:text-4xl">Everything you need for attendance management</h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {features.map(({ icon: Icon, title, description }) => (
-              <div key={title} className="rounded-2xl border border-white/10 bg-[#173b50] p-6">
+              <div key={title} className="landing-feature-card rounded-2xl border border-white/10 bg-[#173b50] p-6">
                 <div className="mb-5 inline-flex rounded-xl bg-indigo-500/10 p-3 text-indigo-300">
                   <Icon className="h-6 w-6" />
                 </div>
@@ -177,7 +177,7 @@ const LandingPage = () => {
         </section>
 
         <section id="about" className="border-y border-white/10 bg-slate-900/60">
-          <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 md:grid-cols-2">
+          <div className="landing-section-reveal mx-auto grid max-w-7xl gap-10 px-6 py-20 md:grid-cols-2">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-300">Why it matters</p>
               <h2 className="mt-3 text-3xl font-bold md:text-4xl">Built for productivity, accountability, and trust.</h2>
@@ -195,7 +195,7 @@ const LandingPage = () => {
         </section>
 
         <section id="security" className="mx-auto max-w-7xl px-6 py-20">
-          <div className="rounded-3xl border border-indigo-500/20 bg-gradient-to-r from-indigo-600/10 via-slate-900 to-slate-900 p-8 md:p-12">
+          <div className="landing-security-card rounded-3xl border border-indigo-500/20 bg-gradient-to-r from-indigo-600/10 via-slate-900 to-slate-900 p-8 md:p-12">
             <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-300">Security first</p>

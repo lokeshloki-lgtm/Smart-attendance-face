@@ -110,6 +110,72 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   animation: pageEnter 0.32s ease-out both;
 }
 
+.landing-header {
+  animation: landingHeader 0.45s ease-out both;
+}
+
+.landing-reveal {
+  animation: landingReveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-delay-1 { animation-delay: 0.08s; }
+.landing-delay-2 { animation-delay: 0.16s; }
+.landing-delay-3 { animation-delay: 0.24s; }
+.landing-delay-4 { animation-delay: 0.32s; }
+.landing-delay-5 { animation-delay: 0.4s; }
+
+.landing-hero-visual {
+  animation: landingReveal 0.7s 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-dashboard-card {
+  animation: landingFloat 5s ease-in-out 0.9s infinite;
+}
+
+.landing-dashboard-card::before {
+  position: absolute;
+  inset: -40% 25% auto;
+  height: 70%;
+  content: '';
+  background: radial-gradient(circle, rgba(103, 232, 249, 0.2), transparent 68%);
+  pointer-events: none;
+}
+
+.landing-stat,
+.landing-feature-card,
+.landing-security-card {
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.landing-stat:hover,
+.landing-feature-card:hover,
+.landing-security-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(103, 232, 249, 0.38);
+  box-shadow: 0 18px 40px rgba(2, 12, 24, 0.24);
+}
+
+.landing-feature-card {
+  animation: landingReveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-feature-card:nth-child(1) { animation-delay: 0.08s; }
+.landing-feature-card:nth-child(2) { animation-delay: 0.16s; }
+.landing-feature-card:nth-child(3) { animation-delay: 0.24s; }
+.landing-feature-card:nth-child(4) { animation-delay: 0.32s; }
+
+.landing-section-heading,
+.landing-section-reveal,
+.landing-security-card {
+  animation: landingReveal 0.6s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-progress {
+  width: var(--progress);
+  transform-origin: left;
+  animation: progressReveal 0.9s 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .error-shake {
   animation: errorShake 0.32s ease-out;
 }
@@ -151,6 +217,26 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes landingHeader {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landingReveal {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landingFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes progressReveal {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 @keyframes errorShake {
   0%, 100% { transform: translateX(0); }
   35% { transform: translateX(-4px); }
@@ -177,6 +263,17 @@ html.dark ::-webkit-scrollbar-thumb:hover {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .landing-dashboard-card,
+  .landing-reveal,
+  .landing-hero-visual,
+  .landing-feature-card,
+  .landing-section-heading,
+  .landing-section-reveal,
+  .landing-security-card,
+  .landing-progress {
+    animation: none !important;
   }
 }
 
