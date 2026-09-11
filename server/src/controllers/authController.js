@@ -79,9 +79,18 @@ export const register = async (req, res) => {
     });
   } catch (error) {
     console.error('Register error:', error);
+    if (error.code === 11000) {
+      const duplicateField = Object.keys(error.keyPattern || error.keyValue || {})[0];
+      const duplicateLabels = { email: 'Email', studentId: 'Student ID' };
+      return res.status(400).json({
+        success: false,
+        message: `${duplicateLabels[duplicateField] || 'This value'} is already registered`,
+        field: duplicateField,
+      });
+    }
     res.status(500).json({
       success: false,
-      message: error.message || 'Registration failed',
+      message: 'Registration could not be completed. Please try again.',
     });
   }
 };

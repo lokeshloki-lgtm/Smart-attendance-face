@@ -48,14 +48,16 @@ const RegisterPage = () => {
 
   const onSubmit = async (data) => {
     try {
+      const normalizedEmail = data.email.trim().toLowerCase();
+      const normalizedId = data.idNumber?.trim() || '';
       const payload = {
         name: data.name.trim(),
-        email: data.email.trim().toLowerCase(),
+        email: normalizedEmail,
         password: data.password,
         role: data.role,
         department: data.department,
         phone: data.phone?.trim() || '',
-        studentId: data.idNumber?.trim(),
+        studentId: normalizedId || undefined,
       };
 
       const res = await registerUser(payload);
@@ -70,7 +72,9 @@ const RegisterPage = () => {
       }
       const msg =
         err.response?.data?.message ||
-        'Registration failed. Please check your information and try again.';
+        (err.response?.status >= 500
+          ? 'The registration service is temporarily unavailable. Please try again shortly.'
+          : 'Registration failed. Please check your information and try again.');
       showError(msg);
     }
   };

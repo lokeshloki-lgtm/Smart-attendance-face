@@ -1,6 +1,6 @@
 export const validateEmail = (email) => {
-  const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-  return emailRegex.test(email);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  return typeof email === 'string' && emailRegex.test(email.trim());
 };
 
 export const validatePassword = (password) => {

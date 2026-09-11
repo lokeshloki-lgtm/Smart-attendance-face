@@ -23,7 +23,7 @@ export const authMiddleware = (req, res, next) => {
 };
 
 export const adminMiddleware = (req, res, next) => {
-  if (req.user?.role !== 'ADMIN') {
+  if (String(req.user?.role || '').trim().toUpperCase() !== 'ADMIN') {
     return res.status(403).json({
       success: false,
       message: 'Access denied. Admin privileges required.',
