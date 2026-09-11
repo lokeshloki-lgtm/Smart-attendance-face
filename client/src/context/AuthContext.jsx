@@ -93,6 +93,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async (credential) => {
+    try {
+      setIsLoading(true);
+      const response = await authAPI.googleLogin(credential);
+      const { token, user } = response.data.data;
+      localStorage.setItem('token', token);
+      const authenticatedUser = normalizeUser(user);
+      localStorage.setItem('user', JSON.stringify(authenticatedUser));
+      setToken(token);
+      setUser(authenticatedUser);
+      setError(null);
+      return { ...response.data, data: { ...response.data.data, user: authenticatedUser } };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Google sign-in failed';
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = async () => {
     try {
       await authAPI.logout();
@@ -121,6 +142,7 @@ export const AuthProvider = ({ children }) => {
         isAdmin,
         register,
         login,
+        loginWithGoogle,
         logout,
         setError,
       }}

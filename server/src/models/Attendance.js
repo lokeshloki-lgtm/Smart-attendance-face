@@ -72,6 +72,10 @@ const attendanceSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    locationVerified: {
+      type: Boolean,
+      default: false,
+    },
     locationAddress: {
       type: String,
       default: null,

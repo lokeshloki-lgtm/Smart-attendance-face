@@ -6,6 +6,7 @@ import {
   getProfile,
   updateProfile,
   changePassword,
+  googleLogin,
 } from '../controllers/authController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
@@ -13,6 +14,7 @@ const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
+router.post('/google', googleLogin);
 router.post('/logout', authMiddleware, logout);
 router.get('/profile', authMiddleware, getProfile);
 router.put('/profile', authMiddleware, updateProfile);

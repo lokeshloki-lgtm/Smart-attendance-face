@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -35,12 +36,12 @@ const adminRoute = (element) => (
 const studentRoute = (element) => <ProtectedRoute allowedRoles={['STUDENT', 'USER']}>{element}</ProtectedRoute>;
 const teacherRoute = (element) => <ProtectedRoute allowedRoles={['TEACHER']}>{element}</ProtectedRoute>;
 
-const App = () => (
-	<ThemeProvider>
-		<AuthProvider>
-			<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-				<Toaster position="top-right" />
-					<Routes>
+const AnimatedRoutes = () => {
+	const location = useLocation();
+	return (
+		<AnimatePresence mode="wait" initial={false}>
+			<motion.div key={location.pathname} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.24, ease: 'easeOut' }}>
+				<Routes>
 					<Route path="/" element={<LandingPage />} />
 					<Route path="/login" element={<LoginPage />} />
 					<Route path="/register" element={<RegisterPage />} />
@@ -69,6 +70,17 @@ const App = () => (
 					<Route path="/user/ai" element={studentRoute(<UserAI />)} />
 					<Route path="*" element={<Navigate to="/" replace />} />
 				</Routes>
+			</motion.div>
+		</AnimatePresence>
+	);
+};
+
+const App = () => (
+	<ThemeProvider>
+		<AuthProvider>
+			<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+				<Toaster position="top-right" />
+					<AnimatedRoutes />
 			</BrowserRouter>
 		</AuthProvider>
 	</ThemeProvider>

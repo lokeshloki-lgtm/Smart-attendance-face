@@ -35,6 +35,18 @@ const retryDelay = (requestError, retryCount) => {
     : 1000 * (2 ** retryCount);
 };
 
+const getCurrentLocation = () => new Promise((resolve, reject) => {
+  if (!navigator.geolocation) {
+    reject(new Error('Location services are not available in this browser.'));
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => resolve({ latitude: coords.latitude, longitude: coords.longitude, accuracy: coords.accuracy }),
+    () => reject(new Error('Location permission is required to mark attendance from the permitted area.')),
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+  );
+});
+
 const UserMarkAttendance = () => {
   const navigate = useNavigate();
   const [capture, setCapture] = useState(null);
@@ -67,6 +79,7 @@ const UserMarkAttendance = () => {
       const recognized = recognitionResponse.data.data;
       setRecognizedStudent(recognized.user);
       setPhase('submitting');
+      const location = await getCurrentLocation();
       for (let retryCount = 0; retryCount <= MAX_ATTENDANCE_RETRIES; retryCount += 1) {
         try {
           if (import.meta.env.DEV) console.debug('[Attendance] submission start', { sessionId: sessionIdRef.current, retryCount });
@@ -76,6 +89,7 @@ const UserMarkAttendance = () => {
             detectionConfidence: capture.detectionConfidence,
             detectedFaceCount: capture.detectedFaceCount,
             deviceName: navigator.userAgent,
+            ...location,
           }, { headers: { 'X-Attendance-Session-Id': sessionIdRef.current } });
           if (import.meta.env.DEV) console.debug('[Attendance] submission success', { sessionId: sessionIdRef.current, status: response.status, retryCount });
           setAttendanceRecord(response.data.data);

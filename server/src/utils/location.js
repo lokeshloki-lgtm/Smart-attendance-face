@@ -34,9 +34,12 @@ export const distanceBetweenCoordinates = (first, second) => {
 
 export const verifyAttendanceLocation = ({ latitude: currentLatitude, longitude: currentLongitude }, config) => {
   if (!config.configured) return { configured: false, allowed: false, distanceMeters: null };
+  if (!Number.isFinite(Number(currentLatitude)) || !Number.isFinite(Number(currentLongitude))) {
+    return { configured: true, allowed: false, distanceMeters: null };
+  }
   const distanceMeters = distanceBetweenCoordinates(
     { latitude: config.latitude, longitude: config.longitude },
-    { latitude: currentLatitude, longitude: currentLongitude },
+    { latitude: Number(currentLatitude), longitude: Number(currentLongitude) },
   );
   return { configured: true, allowed: distanceMeters <= config.radiusMeters, distanceMeters };
 };

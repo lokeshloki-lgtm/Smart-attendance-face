@@ -10,6 +10,7 @@ import {
 } from '../utils/faceMatching.js';
 import { sendAttendanceConfirmationEmail } from '../utils/emailService.js';
 import { getAttendanceWindow } from './settingsController.js';
+import { getAttendanceLocationConfig, verifyAttendanceLocation } from '../utils/location.js';
 
 const MIN_FACE_DETECTION_CONFIDENCE = Number(process.env.FACE_DETECTION_THRESHOLD || 0.5);
 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -50,6 +51,18 @@ export const markAttendance = async (req, res) => {
       longitude,
       accuracy,
     } = req.body;
+
+    const locationConfig = getAttendanceLocationConfig();
+    const locationResult = verifyAttendanceLocation({ latitude, longitude }, locationConfig);
+    if (locationConfig.configured && !locationResult.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: locationResult.distanceMeters == null
+          ? 'Location access is required to mark attendance.'
+          : `You are outside the permitted attendance area (${Math.round(locationResult.distanceMeters)}m away).`,
+        data: { locationVerified: false, distanceMeters: locationResult.distanceMeters, radiusMeters: locationConfig.radiusMeters },
+      });
+    }
 
     if (!Number.isInteger(detectedFaceCount) || detectedFaceCount !== 1) {
       logRecognition({ requestId, detectedFaceCount, reason: 'exactly one face is required' });
@@ -208,7 +221,8 @@ export const markAttendance = async (req, res) => {
       latitude,
       longitude,
       locationAddress: null,
-      mapsLink: `https://www.google.com/maps?q=${latitude},${longitude}`,
+      mapsLink: Number.isFinite(Number(latitude)) && Number.isFinite(Number(longitude)) ? `https://www.google.com/maps?q=${latitude},${longitude}` : null,
+      locationVerified: locationConfig.configured ? locationResult.allowed : false,
       faceVerified: true,
       livenessVerified: false,
       deviceInfo: deviceName || req.headers['user-agent'] || null,
@@ -237,7 +251,7 @@ export const markAttendance = async (req, res) => {
           className: closestMatch.user.className,
           department: closestMatch.user.department,
           recognitionConfidence: Number(Math.max(0, 1 - (closestMatch.distance / FACE_DISTANCE_THRESHOLD)).toFixed(4)),
-          locationVerified: true,
+          locationVerified: locationConfig.configured ? locationResult.allowed : false,
           accuracy: Number.isFinite(accuracy) ? accuracy : null,
         },
       },

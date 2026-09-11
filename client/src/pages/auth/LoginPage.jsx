@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Button, Input, Card } from '../../components/common';
@@ -9,8 +9,10 @@ import { Mail, Lock, Eye, EyeOff, ShieldCheck, UserCheck, ArrowLeft } from 'luci
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated, user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const googleButtonRef = useRef(null);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   const {
     register,
@@ -30,6 +32,37 @@ const LoginPage = () => {
       navigate(getHomeRoute(user.role), { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
+
+  useEffect(() => {
+    if (!googleClientId || !googleButtonRef.current) return undefined;
+    const renderGoogleButton = () => {
+      if (!window.google?.accounts?.id || !googleButtonRef.current) return;
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: async ({ credential }) => {
+          try {
+            const response = await loginWithGoogle(credential);
+            showSuccess(`Welcome back, ${response.data.user.name}!`);
+            navigate(getHomeRoute(response.data.user.role), { replace: true });
+          } catch (error) {
+            showError(error.response?.data?.message || 'Google sign-in failed.');
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(googleButtonRef.current, { theme: 'outline', size: 'large', width: 360, text: 'signin_with' });
+    };
+    if (window.google?.accounts?.id) {
+      renderGoogleButton();
+      return undefined;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = renderGoogleButton;
+    document.head.appendChild(script);
+    return () => { script.onload = null; };
+  }, [googleClientId, loginWithGoogle, navigate]);
 
   const onSubmit = async (data) => {
     try {
@@ -130,6 +163,8 @@ const LoginPage = () => {
               {isSubmitting ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
+
+          {googleClientId && <div className="mt-5 border-t border-slate-200 pt-5 text-center dark:border-slate-800"><p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Or continue with Google</p><div ref={googleButtonRef} className="flex justify-center" /></div>}
 
           {/* Demo quick-fill credentials */}
           <div className="mt-6 rounded-xl border border-indigo-100 dark:border-slate-800 bg-indigo-50/50 dark:bg-slate-800/60 p-3.5">

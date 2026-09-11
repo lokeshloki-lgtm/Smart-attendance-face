@@ -1,6 +1,7 @@
 import bcryptjs from 'bcryptjs';
 import User from '../models/User.js';
 import { generateToken } from '../utils/generateToken.js';
+import { OAuth2Client } from 'google-auth-library';
 import {
   validateEmail,
   validatePassword,
@@ -8,6 +9,41 @@ import {
   validateStudentId,
   validateEmployeeId,
 } from '../utils/validators.js';
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export const googleLogin = async (req, res) => {
+  try {
+    if (!process.env.GOOGLE_CLIENT_ID) return res.status(503).json({ success: false, message: 'Google sign-in is not configured.' });
+    const { credential } = req.body;
+    if (!credential) return res.status(400).json({ success: false, message: 'Google credential is required.' });
+    const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: process.env.GOOGLE_CLIENT_ID });
+    const payload = ticket.getPayload();
+    if (!payload?.email || !payload.email_verified) return res.status(401).json({ success: false, message: 'Your Google email could not be verified.' });
+
+    let user = await User.findOne({ email: payload.email.toLowerCase() });
+    if (!user) {
+      user = await User.create({
+        name: payload.name || payload.email.split('@')[0],
+        email: payload.email.toLowerCase(),
+        password: await bcryptjs.hash(`${payload.sub}:${process.env.JWT_SECRET}`, 12),
+        role: 'STUDENT',
+        studentId: `GOOGLE-${payload.sub.slice(-10)}`,
+        department: 'Unassigned',
+        profileImage: payload.picture || null,
+        isActive: true,
+      });
+    }
+    if (!user.isActive) return res.status(403).json({ success: false, message: 'User account is inactive.' });
+    user.lastLogin = new Date();
+    await user.save();
+    const token = generateToken(user);
+    res.status(200).json({ success: true, message: 'Google sign-in successful', data: { token, user: { _id: user._id, name: user.name, email: user.email, role: user.role, department: user.department, studentId: user.studentId, employeeId: user.employeeId, profileImage: user.profileImage } } });
+  } catch (error) {
+    console.error('Google login error:', error.message);
+    res.status(401).json({ success: false, message: 'Google sign-in could not be verified.' });
+  }
+};
 export const register = async (req, res) => {
   try {
     const { name, email, password, role, department, employeeId, studentId, phone } = req.body;

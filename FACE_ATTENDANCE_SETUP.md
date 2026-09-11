@@ -1,3 +1,19 @@
+# Google sign-in and attendance location
+
+For secure Google/Gmail sign-in, create a Google OAuth web client and configure the same client ID in both environments:
+
+- Server: `GOOGLE_CLIENT_ID=...`
+- Client: `VITE_GOOGLE_CLIENT_ID=...`
+
+Add the local and production application origins to the Google OAuth client. The login button is hidden until the client ID is configured, and the server verifies the Google ID token before linking the verified email to a SmartAttend account. New Google accounts are created as students.
+
+Attendance geofencing is enforced when all three server values are configured:
+
+- `ATTENDANCE_LOCATION_LAT`
+- `ATTENDANCE_LOCATION_LNG`
+- `ATTENDANCE_RADIUS_METERS`
+
+Students must grant high-accuracy browser location permission. Attendance is rejected when the location is missing or outside the configured radius.
 # Face Attendance Setup
 
 This project stores face-api.js descriptors in MongoDB and marks attendance only when the captured descriptor matches an active registered user.
