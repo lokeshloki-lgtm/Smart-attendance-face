@@ -1,3 +1,4 @@
+            <Card><p className="text-sm text-gray-500">This month</p><p className="mt-2 text-2xl font-bold">{dashboard.currentMonth.percentage}%</p><p className="mt-1 text-sm text-gray-500">P {dashboard.currentMonth.summary.present} · L {dashboard.currentMonth.summary.late} · A {dashboard.currentMonth.summary.absent}</p></Card>
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';

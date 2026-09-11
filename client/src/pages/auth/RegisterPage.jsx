@@ -57,13 +57,14 @@ const RegisterPage = () => {
         role: data.role,
         department: data.department,
         phone: data.phone?.trim() || '',
-        studentId: normalizedId || undefined,
+        ...(data.role === 'TEACHER'
+          ? { employeeId: normalizedId || undefined }
+          : { studentId: normalizedId || undefined }),
       };
 
-      const res = await registerUser(payload);
-      showSuccess(`Account created! Welcome, ${res?.data?.user?.name || data.name}!`);
-
-      navigate(getHomeRoute(res?.data?.user?.role || data.role), { replace: true });
+      await registerUser(payload);
+      showSuccess('Account created successfully. Sign in with your new credentials.');
+      navigate('/login', { replace: true, state: { registeredEmail: normalizedEmail } });
     } catch (err) {
       if (err.response?.status === 429) {
         const retryAfter = err.response.data?.retryAfterSeconds;
@@ -198,7 +199,10 @@ const RegisterPage = () => {
                 icon={BadgeCheck}
                 placeholder="STU001"
                 error={errors.idNumber?.message}
-                {...register('idNumber')}
+                {...register('idNumber', {
+                  required: 'Member or teacher ID is required',
+                  validate: (value) => value.trim().length > 0 || 'Member or teacher ID is required',
+                })}
               />
             </div>
 

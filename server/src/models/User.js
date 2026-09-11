@@ -28,6 +28,8 @@ const userSchema = new mongoose.Schema(
     employeeId: {
       type: String,
       sparse: true,
+      unique: true,
+      trim: true,
     },
     studentId: {
       type: String,

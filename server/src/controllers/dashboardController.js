@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import Attendance from '../models/Attendance.js';
+import { calculateAttendancePercentage } from '../utils/attendanceMetrics.js';
 
 export const getAdminDashboard = async (req, res) => {
   try {
@@ -25,7 +26,7 @@ export const getAdminDashboard = async (req, res) => {
     const presentToday = todayAttendance.filter((a) => a.status === 'Present').length;
     const absentToday = todayAttendance.filter((a) => a.status === 'Absent').length;
     const lateToday = todayAttendance.filter((a) => a.status === 'Late').length;
-    const attendancePercentage = totalUsers > 0 ? Number((((presentToday + lateToday) / totalUsers) * 100).toFixed(2)) : 0;
+    const attendancePercentage = calculateAttendancePercentage(presentToday, lateToday, totalUsers);
 
     // Average attendance (last 30 days)
     const thirtyDaysAgo = new Date();
@@ -39,10 +40,7 @@ export const getAdminDashboard = async (req, res) => {
     const absentRecent = recentAttendance.filter((a) => a.status === 'Absent').length;
     const lateRecent = recentAttendance.filter((a) => a.status === 'Late').length;
 
-    const averageAttendance =
-      recentAttendance.length > 0
-        ? (((presentRecent + lateRecent) / recentAttendance.length) * 100).toFixed(2)
-        : 0;
+    const averageAttendance = calculateAttendancePercentage(presentRecent, lateRecent, recentAttendance.length);
 
     // Department-wise stats
     const allUsers = await User.find({ isActive: true, role: { $ne: 'ADMIN' } }).select('department');
@@ -149,10 +147,7 @@ export const getUserDashboard = async (req, res) => {
     const absentAll = allAttendance.filter((a) => a.status === 'Absent').length;
     const lateAll = allAttendance.filter((a) => a.status === 'Late').length;
 
-    const percentageAll =
-      allAttendance.length > 0
-        ? (((presentAll + lateAll) / allAttendance.length) * 100).toFixed(2)
-        : 0;
+    const percentageAll = calculateAttendancePercentage(presentAll, lateAll, allAttendance.length);
 
     // Last 30 days
     const thirtyDaysAgo = new Date();
@@ -167,10 +162,7 @@ export const getUserDashboard = async (req, res) => {
     const absentMonth = monthAttendance.filter((a) => a.status === 'Absent').length;
     const lateMonth = monthAttendance.filter((a) => a.status === 'Late').length;
 
-    const percentageMonth =
-      monthAttendance.length > 0
-        ? (((presentMonth + lateMonth) / monthAttendance.length) * 100).toFixed(2)
-        : 0;
+    const percentageMonth = calculateAttendancePercentage(presentMonth, lateMonth, monthAttendance.length);
 
     // Today's status
     const today = new Date();
@@ -263,7 +255,7 @@ export const getUserDashboard = async (req, res) => {
         },
         recentAttendance,
         monthlyChart,
-        currentMonth: { year: today.getFullYear(), month: today.getMonth(), days: currentMonth, summary: currentMonthSummary, percentage: currentMonthTotal ? Number((((currentMonthSummary.present + currentMonthSummary.late) / currentMonthTotal) * 100).toFixed(2)) : 0 },
+        currentMonth: { year: today.getFullYear(), month: today.getMonth(), days: currentMonth, summary: currentMonthSummary, percentage: calculateAttendancePercentage(currentMonthSummary.present, currentMonthSummary.late, currentMonthTotal) },
         currentWeek,
       },
     });

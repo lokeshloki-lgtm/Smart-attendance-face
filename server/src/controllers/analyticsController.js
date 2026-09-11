@@ -1,5 +1,6 @@
 import Attendance from '../models/Attendance.js';
 import User from '../models/User.js';
+import { calculateAttendancePercentage } from '../utils/attendanceMetrics.js';
 
 export const getAnalyticsOverview = async (req, res) => {
   try {
@@ -166,10 +167,7 @@ export const getUserAttendancePercentage = async (req, res) => {
         const absent = attendance.filter((a) => a.status === 'Absent').length;
         const late = attendance.filter((a) => a.status === 'Late').length;
 
-        const percentage =
-          attendance.length > 0
-            ? (((present + late) / attendance.length) * 100).toFixed(2)
-            : 0;
+        const percentage = calculateAttendancePercentage(present, late, attendance.length);
 
         return {
           userId: user._id,
@@ -290,7 +288,7 @@ export const getAttendanceInsights = async (req, res) => {
     const totals = countStatus(records);
     const totalExpected = Math.max(members.length * (Math.floor((endDate - startDate) / 86400000) + 1), records.length);
     const attended = totals.present + totals.late;
-    const percentage = totalExpected ? Number(((attended / totalExpected) * 100).toFixed(2)) : 0;
+    const percentage = calculateAttendancePercentage(totals.present, totals.late, totalExpected);
     const dateKey = (date) => date.toISOString().slice(0, 10);
     const daily = [];
     for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
@@ -303,7 +301,7 @@ export const getAttendanceInsights = async (req, res) => {
       const memberRecords = records.filter((record) => String(record.userId?._id || record.userId) === String(member._id));
       const summary = countStatus(memberRecords);
       const expected = daily.length;
-      return { ...member.toObject(), ...summary, total: memberRecords.length, expected, attendancePercentage: expected ? Number((((summary.present + summary.late) / expected) * 100).toFixed(2)) : 0 };
+      return { ...member.toObject(), ...summary, total: memberRecords.length, expected, attendancePercentage: calculateAttendancePercentage(summary.present, summary.late, expected) };
     }).sort((a, b) => b.attendancePercentage - a.attendancePercentage);
 
     const lowest = [...memberStats].sort((a, b) => a.attendancePercentage - b.attendancePercentage).slice(0, 5);

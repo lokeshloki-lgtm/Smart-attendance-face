@@ -1,7 +1,7 @@
 import bcryptjs from 'bcryptjs';
 import User from '../models/User.js';
 import Attendance from '../models/Attendance.js';
-import { validateFaceDescriptor, validateStudentId } from '../utils/validators.js';
+import { validateFaceDescriptor, validateStudentId, validateEmployeeId } from '../utils/validators.js';
 import {
   calculateFaceDistance,
   FACE_DISTANCE_THRESHOLD,
@@ -104,25 +104,34 @@ export const createUser = async (req, res) => {
   try {
     const { name, email, password, role, employeeId, studentId, department, className, phone, profilePhoto, faceDescriptor, faceDescriptors, faceImage } = req.body;
     const normalizedStudentId = studentId?.trim();
+    const normalizedEmployeeId = employeeId?.trim();
     const normalizedEmail = email?.trim().toLowerCase();
-    const accountRole = role || 'STUDENT';
+    const accountRole = String(role || 'STUDENT').trim().toUpperCase();
     const descriptors = Array.isArray(faceDescriptors) && faceDescriptors.length
       ? faceDescriptors
       : faceDescriptor ? [faceDescriptor] : [];
 
     // Check if user exists
-    const existingUser = await User.findOne({ $or: [{ email: normalizedEmail }, ...(normalizedStudentId ? [{ studentId: normalizedStudentId }] : [])] });
+    const identifier = accountRole === 'TEACHER' ? normalizedEmployeeId : normalizedStudentId;
+    const identifierQuery = accountRole === 'TEACHER' ? { employeeId: identifier } : { studentId: identifier };
+    const existingUser = await User.findOne({ $or: [{ email: normalizedEmail }, ...(identifier ? [identifierQuery] : [])] });
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: existingUser.studentId === normalizedStudentId
-          ? `Student ID ${normalizedStudentId} is already registered`
-          : 'Email already exists',
+        message: existingUser.email === normalizedEmail
+          ? 'Email already exists'
+          : accountRole === 'TEACHER'
+            ? `Teacher ID ${normalizedEmployeeId} is already registered`
+            : `Student ID ${normalizedStudentId} is already registered`,
       });
     }
 
     if (accountRole === 'STUDENT' && !validateStudentId(normalizedStudentId)) {
       return res.status(400).json({ success: false, message: 'A valid student ID is required' });
+    }
+
+    if (accountRole === 'TEACHER' && !validateEmployeeId(normalizedEmployeeId)) {
+      return res.status(400).json({ success: false, message: 'A valid teacher ID is required' });
     }
 
     if (descriptors.length && (descriptors.length < 1 || descriptors.some((descriptor) => !validateFaceDescriptor(descriptor)))) {
@@ -158,8 +167,8 @@ export const createUser = async (req, res) => {
       email: normalizedEmail,
       password: hashedPassword,
       role: accountRole,
-      employeeId,
-      studentId: normalizedStudentId,
+      employeeId: accountRole === 'TEACHER' ? normalizedEmployeeId : undefined,
+      studentId: accountRole === 'STUDENT' ? normalizedStudentId : undefined,
       department,
       className,
       phone,

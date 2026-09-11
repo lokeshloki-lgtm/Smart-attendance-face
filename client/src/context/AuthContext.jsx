@@ -7,7 +7,12 @@ globalThis[AUTH_CONTEXT_KEY] = AuthContext;
 
 export const normalizeRole = (role) => String(role || '').trim().toUpperCase();
 
-export const getHomeRoute = (role) => normalizeRole(role) === 'ADMIN' ? '/dashboard' : '/student/dashboard';
+export const getHomeRoute = (role) => {
+  const normalizedRole = normalizeRole(role);
+  if (normalizedRole === 'ADMIN') return '/dashboard';
+  if (normalizedRole === 'TEACHER') return '/teacher/dashboard';
+  return '/student/dashboard';
+};
 
 const normalizeUser = (value) => value ? { ...value, role: normalizeRole(value.role) } : null;
 
@@ -54,16 +59,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true);
       const response = await authAPI.register(userData);
-      const { token, user } = response.data.data;
-
-      localStorage.setItem('token', token);
-      const authenticatedUser = normalizeUser(user);
-      localStorage.setItem('user', JSON.stringify(authenticatedUser));
-      setToken(token);
-      setUser(authenticatedUser);
       setError(null);
-
-      return { ...response.data, data: { ...response.data.data, user: authenticatedUser } };
+      return response.data;
     } catch (err) {
       const message = err.response?.data?.message || 'Registration failed';
       setError(message);

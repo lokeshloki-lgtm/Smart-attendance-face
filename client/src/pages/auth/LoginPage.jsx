@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Button, Input, Card } from '../../components/common';
 import { getHomeRoute, useAuth } from '../../context/AuthContext';
@@ -8,6 +8,7 @@ import { Mail, Lock, Eye, EyeOff, ShieldCheck, UserCheck, ArrowLeft } from 'luci
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isAuthenticated, user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -18,7 +19,7 @@ const LoginPage = () => {
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
-      email: '',
+      email: location.state?.registeredEmail || '',
       password: '',
     },
   });

@@ -5,12 +5,18 @@ import {
   validateEmail,
   validatePassword,
   validateName,
+  validateStudentId,
+  validateEmployeeId,
 } from '../utils/validators.js';
 export const register = async (req, res) => {
   try {
     const { name, email, password, role, department, employeeId, studentId, phone } = req.body;
     const normalizedEmail = email?.trim().toLowerCase();
-    const accountRole = ['TEACHER', 'STUDENT'].includes(role) ? role : 'STUDENT';
+    const normalizedRole = String(role || '').trim().toUpperCase();
+    const accountRole = ['TEACHER', 'STUDENT'].includes(normalizedRole) ? normalizedRole : 'STUDENT';
+    const normalizedDepartment = department?.trim();
+    const normalizedStudentId = studentId?.trim();
+    const normalizedEmployeeId = employeeId?.trim();
 
     // Validation
     if (!validateName(name)) {
@@ -34,12 +40,32 @@ export const register = async (req, res) => {
       });
     }
 
+    if (!normalizedDepartment) {
+      return res.status(400).json({ success: false, message: 'Department is required' });
+    }
+
+    if (accountRole === 'TEACHER' && !validateEmployeeId(normalizedEmployeeId)) {
+      return res.status(400).json({ success: false, message: 'A valid teacher ID is required' });
+    }
+
+    if (accountRole === 'STUDENT' && !validateStudentId(normalizedStudentId)) {
+      return res.status(400).json({ success: false, message: 'A valid student ID is required' });
+    }
+
     // Check if user exists
-    const existingUser = await User.findOne({ email: normalizedEmail });
+    const identifierQuery = accountRole === 'TEACHER'
+      ? { employeeId: normalizedEmployeeId }
+      : { studentId: normalizedStudentId };
+    const existingUser = await User.findOne({
+      $or: [{ email: normalizedEmail }, identifierQuery],
+    });
     if (existingUser) {
-      return res.status(400).json({
+      const duplicateField = existingUser.email === normalizedEmail
+        ? 'Email'
+        : accountRole === 'TEACHER' ? 'Teacher ID' : 'Student ID';
+      return res.status(409).json({
         success: false,
-        message: 'Email already registered',
+        message: `${duplicateField} already registered`,
       });
     }
 
@@ -52,19 +78,16 @@ export const register = async (req, res) => {
       email: normalizedEmail,
       password: hashedPassword,
       role: accountRole,
-      department: department || '',
-      employeeId: employeeId || undefined,
-      studentId: studentId || undefined,
+      department: normalizedDepartment,
+      employeeId: accountRole === 'TEACHER' ? normalizedEmployeeId : undefined,
+      studentId: accountRole === 'STUDENT' ? normalizedStudentId : undefined,
       phone: phone || '',
     });
-
-    const token = generateToken(user);
 
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
       data: {
-        token,
         user: {
           _id: user._id,
           name: user.name,
@@ -81,7 +104,7 @@ export const register = async (req, res) => {
     console.error('Register error:', error);
     if (error.code === 11000) {
       const duplicateField = Object.keys(error.keyPattern || error.keyValue || {})[0];
-      const duplicateLabels = { email: 'Email', studentId: 'Student ID' };
+      const duplicateLabels = { email: 'Email', studentId: 'Student ID', employeeId: 'Teacher ID' };
       return res.status(400).json({
         success: false,
         message: `${duplicateLabels[duplicateField] || 'This value'} is already registered`,
@@ -114,7 +137,7 @@ export const login = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password',
+        message: 'No account was found for that email address',
       });
     }
 
@@ -124,7 +147,7 @@ export const login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password',
+        message: 'The password is incorrect',
       });
     }
 
