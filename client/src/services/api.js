@@ -70,6 +70,8 @@ export const userAPI = {
   registerFace: (id, data) => api.post(`/users/${id}/face`, data),
   recognizeFace: (data) => api.post('/users/face/recognize', data),
   getStats: (id) => api.get(`/users/${id}/stats`),
+  getTeacherStudents: (params) => api.get('/users/teacher/students', { params }),
+  getTeacherStudentAttendance: (id) => api.get(`/users/teacher/students/${id}/attendance`),
 };
 
 // Face registration endpoints

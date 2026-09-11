@@ -21,7 +21,7 @@ const playAttendanceSuccessSound = async () => {
   try {
     await audio.play();
   } catch (audioError) {
-    console.warn('[Attendance] success sound was blocked by the browser', { message: audioError.message });
+    if (import.meta.env.DEV) console.warn('[Attendance] success sound was blocked by the browser', { message: audioError.message });
   }
 };
 
@@ -58,7 +58,7 @@ const UserMarkAttendance = () => {
     setPhase('verifying');
     setError('');
     setMessage('');
-    console.debug('[Attendance] face match captured', { sessionId: sessionIdRef.current, detectionConfidence: capture.detectionConfidence });
+    if (import.meta.env.DEV) console.debug('[Attendance] face match captured', { sessionId: sessionIdRef.current, detectionConfidence: capture.detectionConfidence });
     try {
       setPhase('verifying');
       const recognitionResponse = await userAPI.recognizeFace({
@@ -69,7 +69,7 @@ const UserMarkAttendance = () => {
       setPhase('submitting');
       for (let retryCount = 0; retryCount <= MAX_ATTENDANCE_RETRIES; retryCount += 1) {
         try {
-          console.debug('[Attendance] submission start', { sessionId: sessionIdRef.current, retryCount });
+          if (import.meta.env.DEV) console.debug('[Attendance] submission start', { sessionId: sessionIdRef.current, retryCount });
           const response = await attendanceAPI.mark({
             faceDescriptor: capture.descriptor,
             faceDescriptors: capture.descriptors,
@@ -77,7 +77,7 @@ const UserMarkAttendance = () => {
             detectedFaceCount: capture.detectedFaceCount,
             deviceName: navigator.userAgent,
           }, { headers: { 'X-Attendance-Session-Id': sessionIdRef.current } });
-          console.debug('[Attendance] submission success', { sessionId: sessionIdRef.current, status: response.status, retryCount });
+          if (import.meta.env.DEV) console.debug('[Attendance] submission success', { sessionId: sessionIdRef.current, status: response.status, retryCount });
           setAttendanceRecord(response.data.data);
           setRecognizedStudent(response.data.data.user || recognized.user);
           await playAttendanceSuccessSound();
@@ -87,10 +87,10 @@ const UserMarkAttendance = () => {
           return;
         } catch (requestError) {
           const status = requestError.response?.status;
-          console.warn('[Attendance] submission response', { sessionId: sessionIdRef.current, status, retryCount });
+          if (import.meta.env.DEV) console.warn('[Attendance] submission response', { sessionId: sessionIdRef.current, status, retryCount });
           if (status !== 429 || retryCount === MAX_ATTENDANCE_RETRIES) throw requestError;
           const delay = retryDelay(requestError, retryCount);
-          console.warn('[Attendance] rate limited; retrying', { sessionId: sessionIdRef.current, retryCount: retryCount + 1, delay });
+          if (import.meta.env.DEV) console.warn('[Attendance] rate limited; retrying', { sessionId: sessionIdRef.current, retryCount: retryCount + 1, delay });
           await wait(delay);
         }
       }

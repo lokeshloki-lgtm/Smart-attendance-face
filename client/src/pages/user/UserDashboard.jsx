@@ -1,4 +1,3 @@
-            <Card><p className="text-sm text-gray-500">This month</p><p className="mt-2 text-2xl font-bold">{dashboard.currentMonth.percentage}%</p><p className="mt-1 text-sm text-gray-500">P {dashboard.currentMonth.summary.present} · L {dashboard.currentMonth.summary.late} · A {dashboard.currentMonth.summary.absent}</p></Card>
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
@@ -15,6 +14,13 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { dashboardAPI } from '../../services/api';
+
+const localDateKey = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const UserDashboard = () => {
   const { user } = useAuth();
@@ -111,8 +117,8 @@ const UserDashboard = () => {
         )}
 
         {dashboard && <div className="mb-8 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <Card><div className="flex items-center justify-between"><div><h2 className="text-lg font-bold">{new Date(dashboard.currentMonth.year, dashboard.currentMonth.month).toLocaleString('en-US', { month: 'long', year: 'numeric' })}</h2><p className="mt-1 text-sm text-gray-500">Green present, yellow late, red absent</p></div><Calendar className="text-indigo-500" size={22} /></div><div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs"><span className="font-semibold text-gray-500">Mon</span><span className="font-semibold text-gray-500">Tue</span><span className="font-semibold text-gray-500">Wed</span><span className="font-semibold text-gray-500">Thu</span><span className="font-semibold text-gray-500">Fri</span><span className="font-semibold text-gray-500">Sat</span><span className="font-semibold text-gray-500">Sun</span>{Array.from({ length: (new Date(dashboard.currentMonth.year, dashboard.currentMonth.month, 1).getDay() + 6) % 7 }).map((_, index) => <span key={`empty-${index}`} />)}{dashboard.currentMonth.days.map((day) => { const status = day.present ? 'bg-emerald-500' : day.late ? 'bg-amber-400' : day.absent ? 'bg-rose-500' : 'bg-slate-200 dark:bg-slate-700'; return <div key={day.date} className={`rounded p-2 text-white ${status} ${day.date === new Date().toISOString().split('T')[0] ? 'ring-2 ring-indigo-500 ring-offset-1' : ''}`} title={`${day.date}: Present ${day.present}, Absent ${day.absent}, Late ${day.late}`}>{Number(day.date.slice(-2))}</div>; })}</div></Card>
-          <Card><h2 className="text-lg font-bold">This week</h2><p className="mt-1 text-sm text-gray-500">Monday to Sunday</p><div className="mt-5 grid grid-cols-7 gap-2">{dashboard.currentWeek.map((day) => <div key={day.date} className={`rounded-lg p-2 text-center ${day.date === new Date().toISOString().split('T')[0] ? 'bg-indigo-600 text-white' : 'bg-gray-50 dark:bg-slate-700'}`}><p className="text-xs font-bold">{day.day}</p><p className="mt-2 text-lg font-bold">{day.present + day.late}</p><p className="text-[10px] text-emerald-600">P {day.present}</p><p className="text-[10px] text-rose-500">A {day.absent}</p><p className="text-[10px] text-amber-600">L {day.late}</p></div>)}</div></Card>
+          <Card><div className="flex items-center justify-between"><div><h2 className="text-lg font-bold">{new Date(dashboard.currentMonth.year, dashboard.currentMonth.month).toLocaleString('en-US', { month: 'long', year: 'numeric' })}</h2><p className="mt-1 text-sm text-gray-500">Green present, yellow late, red absent</p></div><Calendar className="text-indigo-500" size={22} /></div><div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs"><span className="font-semibold text-gray-500">Mon</span><span className="font-semibold text-gray-500">Tue</span><span className="font-semibold text-gray-500">Wed</span><span className="font-semibold text-gray-500">Thu</span><span className="font-semibold text-gray-500">Fri</span><span className="font-semibold text-gray-500">Sat</span><span className="font-semibold text-gray-500">Sun</span>{Array.from({ length: (new Date(dashboard.currentMonth.year, dashboard.currentMonth.month, 1).getDay() + 6) % 7 }).map((_, index) => <span key={`empty-${index}`} />)}{dashboard.currentMonth.days.map((day) => { const status = day.present ? 'bg-emerald-500' : day.late ? 'bg-amber-400' : day.absent ? 'bg-rose-500' : 'bg-slate-200 dark:bg-slate-700'; return <div key={day.date} className={`rounded p-2 text-white ${status} ${day.date === localDateKey(new Date()) ? 'ring-2 ring-indigo-500 ring-offset-1' : ''}`} title={`${day.date}: Present ${day.present}, Absent ${day.absent}, Late ${day.late}`}>{Number(day.date.slice(-2))}</div>; })}</div></Card>
+          <Card><h2 className="text-lg font-bold">This week</h2><p className="mt-1 text-sm text-gray-500">Monday to Sunday</p><div className="mt-5 grid grid-cols-7 gap-2">{dashboard.currentWeek.map((day) => <div key={day.date} className={`rounded-lg p-2 text-center ${day.date === localDateKey(new Date()) ? 'bg-indigo-600 text-white' : 'bg-gray-50 dark:bg-slate-700'}`}><p className="text-xs font-bold">{day.day}</p><p className="mt-2 text-lg font-bold">{day.present + day.late}</p><p className="text-[10px] text-emerald-600">P {day.present}</p><p className="text-[10px] text-rose-500">A {day.absent}</p><p className="text-[10px] text-amber-600">L {day.late}</p></div>)}</div></Card>
         </div>}
 
         {/* Quick Actions */}

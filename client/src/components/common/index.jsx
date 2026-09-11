@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 export const Button = ({
   children,
@@ -10,6 +10,7 @@ export const Button = ({
   className = '',
   ...props
 }) => {
+  const reduceMotion = useReducedMotion();
   const baseClasses =
     'font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2';
 
@@ -33,8 +34,9 @@ export const Button = ({
 
   return (
     <motion.button
-      whileHover={{ scale: disabled ? 1 : 1.02 }}
-      whileTap={{ scale: disabled ? 1 : 0.98 }}
+      whileHover={{ scale: disabled || reduceMotion ? 1 : 1.02 }}
+      whileTap={{ scale: disabled || reduceMotion ? 1 : 0.98 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${
         disabled ? 'cursor-not-allowed opacity-50' : ''
       } ${className}`}
@@ -111,11 +113,14 @@ export const Input = React.forwardRef(
 Input.displayName = 'Input';
 
 export const Card = ({ children, className = '', ...props }) => {
+  const reduceMotion = useReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 ${className}`}
+      whileHover={reduceMotion ? undefined : { y: -2 }}
+      transition={{ duration: 0.28, ease: 'easeOut' }}
+      className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-shadow duration-300 hover:shadow-xl ${className}`}
       {...props}
     >
       {children}

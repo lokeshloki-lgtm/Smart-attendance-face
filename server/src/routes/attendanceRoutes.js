@@ -26,7 +26,7 @@ router.get('/history', authMiddleware, getOwnAttendanceHistory);
 router.get('/', authMiddleware, adminMiddleware, getAllAttendance);
 
 // Get today's attendance
-router.get('/today', authMiddleware, getTodayAttendance);
+router.get('/today', authMiddleware, adminMiddleware, getTodayAttendance);
 router.get('/week', authMiddleware, getAttendanceWeek);
 router.get('/month', authMiddleware, getAttendanceMonth);
 

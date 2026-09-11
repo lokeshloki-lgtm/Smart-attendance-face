@@ -36,7 +36,7 @@ export const chatWithAI = async (req, res) => {
           $gte: new Date().setHours(0, 0, 0, 0),
           $lt: new Date().setHours(23, 59, 59, 999),
         },
-      }).populate('userId');
+      }).populate('userId', 'name email role department studentId employeeId className profileImage profilePhoto');
 
       const presentToday = todayAttendance.filter((a) => a.status === 'Present').length;
       const absentToday = todayAttendance.filter((a) => a.status === 'Absent').length;
@@ -149,7 +149,7 @@ export const generateAttendanceSummary = async (req, res) => {
       if (userRole === 'ADMIN') {
         attendance = await Attendance.find({
           date: { $gte: start, $lte: end },
-        }).populate('userId');
+        }).populate('userId', 'name email role department studentId employeeId className profileImage profilePhoto');
       } else {
         attendance = await Attendance.find({
           userId: req.user._id,
@@ -158,7 +158,7 @@ export const generateAttendanceSummary = async (req, res) => {
       }
     } else {
       if (userRole === 'ADMIN') {
-        attendance = await Attendance.find().populate('userId');
+        attendance = await Attendance.find().populate('userId', 'name email role department studentId employeeId className profileImage profilePhoto');
       } else {
         attendance = await Attendance.find({ userId: req.user._id });
       }

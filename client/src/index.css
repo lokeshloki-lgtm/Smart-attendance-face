@@ -106,6 +106,80 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   animation: slideIn 0.5s ease-out;
 }
 
+.page-enter {
+  animation: pageEnter 0.32s ease-out both;
+}
+
+.error-shake {
+  animation: errorShake 0.32s ease-out;
+}
+
+.face-scan-frame {
+  position: relative;
+  overflow: hidden;
+  animation: scanFramePulse 1.8s ease-in-out infinite;
+}
+
+.face-scan-line {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 8%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #67e8f9, transparent);
+  box-shadow: 0 0 14px rgba(103, 232, 249, 0.9);
+  animation: scanLine 1.8s ease-in-out infinite;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.skeleton::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-4px); }
+  70% { transform: translateX(4px); }
+}
+
+@keyframes scanFramePulse {
+  0%, 100% { border-color: rgba(110, 231, 183, 0.65); }
+  50% { border-color: rgba(103, 232, 249, 0.95); }
+}
+
+@keyframes scanLine {
+  0%, 100% { top: 8%; opacity: 0.45; }
+  50% { top: 88%; opacity: 1; }
+}
+
+@keyframes skeletonShimmer {
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @keyframes slideIn {
   from {
     transform: translateY(-20px);

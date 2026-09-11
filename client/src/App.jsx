@@ -26,6 +26,7 @@ import UserAttendanceHistory from './pages/user/UserAttendanceHistory';
 import UserProfile from './pages/user/UserProfile';
 import UserAI from './pages/user/UserAI';
 import RegisterFacePage from './pages/user/RegisterFacePage';
+import TeacherDashboard from './pages/teacher/TeacherDashboard';
 
 const adminRoute = (element) => (
 	<ProtectedRoute requireAdmin>{element}</ProtectedRoute>
@@ -39,7 +40,7 @@ const App = () => (
 		<AuthProvider>
 			<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
 				<Toaster position="top-right" />
-				<Routes>
+					<Routes>
 					<Route path="/" element={<LandingPage />} />
 					<Route path="/login" element={<LoginPage />} />
 					<Route path="/register" element={<RegisterPage />} />
@@ -58,7 +59,8 @@ const App = () => (
 					<Route path="/attendance-insights" element={adminRoute(<AttendanceInsightsPage />)} />
 
 					<Route path="/user/dashboard" element={studentRoute(<UserDashboard />)} />
-					<Route path="/teacher/dashboard" element={teacherRoute(<UserDashboard />)} />
+					<Route path="/teacher/dashboard" element={teacherRoute(<TeacherDashboard />)} />
+					<Route path="/teacher/students" element={teacherRoute(<TeacherDashboard />)} />
 					<Route path="/student/dashboard" element={studentRoute(<UserDashboard />)} />
 					<Route path="/user/mark-attendance" element={studentRoute(<UserMarkAttendance />)} />
 					<Route path="/user/register-face" element={studentRoute(<RegisterFacePage />)} />

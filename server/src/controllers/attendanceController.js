@@ -14,6 +14,13 @@ import { getAttendanceWindow } from './settingsController.js';
 const MIN_FACE_DETECTION_CONFIDENCE = Number(process.env.FACE_DETECTION_THRESHOLD || 0.5);
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
+const localDateKey = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const logRecognition = (details) => {
   if (isDevelopment) console.debug('[Attendance] recognition', details);
 };
@@ -190,6 +197,7 @@ export const markAttendance = async (req, res) => {
       name: closestMatch.user.name,
       rollNumber: closestMatch.user.studentId || closestMatch.user.employeeId || null,
       date: today,
+      attendanceDate: localDateKey(today),
       checkInTime: timeString,
       time: timeString,
       status,
@@ -277,7 +285,7 @@ export const getAllAttendance = async (req, res) => {
     }
 
     let attendanceRecords = await Attendance.find(query)
-      .populate('userId', '-password -faceDescriptor -faceDescriptors')
+      .populate('userId', '-password -faceDescriptor -faceDescriptors -faceEmbedding -faceImage')
       .sort({ date: -1, checkInTime: -1 });
 
     // Apply department and search filters after population
@@ -318,7 +326,7 @@ export const getAllAttendance = async (req, res) => {
 export const getAttendanceByUser = async (req, res) => {
   try {
     const { userId } = req.params;
-    if (req.user.role !== 'ADMIN' && req.user._id !== userId) {
+    if (req.user.role !== 'ADMIN' && String(req.user._id) !== String(userId)) {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
     const { startDate, endDate, page = 1, limit = 10 } = req.query;
@@ -342,7 +350,7 @@ export const getAttendanceByUser = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const attendance = await Attendance.find(query)
-      .populate('userId', '-password -faceDescriptor')
+      .populate('userId', '-password -faceDescriptor -faceDescriptors -faceEmbedding -faceImage')
       .limit(parseInt(limit))
       .skip(skip)
       .sort({ date: -1 });
@@ -384,7 +392,7 @@ export const getTodayAttendance = async (req, res) => {
         $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
       },
     })
-      .populate('userId', '-password -faceDescriptor')
+      .populate('userId', '-password -faceDescriptor -faceDescriptors -faceEmbedding -faceImage')
       .sort({ checkInTime: -1 });
 
     const present = attendance.filter((a) => a.status === 'Present').length;
@@ -460,7 +468,7 @@ export const getAttendanceReport = async (req, res) => {
     }
 
     let attendance = await Attendance.find(query)
-      .populate('userId', '-password -faceDescriptor');
+      .populate('userId', '-password -faceDescriptor -faceDescriptors -faceEmbedding -faceImage');
 
     if (department) {
       attendance = attendance.filter((a) => a.userId.department === department);

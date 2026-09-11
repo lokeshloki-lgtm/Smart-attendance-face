@@ -2,6 +2,13 @@ import User from '../models/User.js';
 import Attendance from '../models/Attendance.js';
 import { calculateAttendancePercentage } from '../utils/attendanceMetrics.js';
 
+const localDateKey = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const getAdminDashboard = async (req, res) => {
   try {
     const today = new Date();
@@ -21,7 +28,7 @@ export const getAdminDashboard = async (req, res) => {
         $gte: today,
         $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
       },
-    }).populate('userId', '-password -faceDescriptor');
+    }).populate('userId', '-password -faceDescriptor -faceDescriptors -faceEmbedding -faceImage');
 
     const presentToday = todayAttendance.filter((a) => a.status === 'Present').length;
     const absentToday = todayAttendance.filter((a) => a.status === 'Absent').length;
@@ -65,7 +72,7 @@ export const getAdminDashboard = async (req, res) => {
 
     // Recent attendance records
     const recentRecords = await Attendance.find()
-      .populate('userId', '-password -faceDescriptor')
+      .populate('userId', '-password -faceDescriptor -faceDescriptors -faceEmbedding -faceImage')
       .sort({ date: -1, checkInTime: -1 })
       .limit(10);
 
@@ -132,7 +139,7 @@ export const getUserDashboard = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const user = await User.findById(userId).select('-password -faceDescriptor');
+    const user = await User.findById(userId).select('-password -faceDescriptor -faceDescriptors -faceEmbedding -faceImage');
 
     if (!user) {
       return res.status(404).json({
@@ -185,8 +192,8 @@ export const getUserDashboard = async (req, res) => {
     weekEnd.setDate(weekEnd.getDate() + 7);
     const weekRecords = await Attendance.find({ userId, date: { $gte: weekStart, $lt: weekEnd } });
     const summarizeDay = (records, date) => {
-      const key = date.toISOString().split('T')[0];
-      const matching = records.filter((record) => record.date.toISOString().split('T')[0] === key);
+      const key = localDateKey(date);
+      const matching = records.filter((record) => (record.attendanceDate || localDateKey(record.date)) === key);
       return { date: key, day: date.toLocaleDateString('en-US', { weekday: 'short' }), present: matching.filter((record) => record.status === 'Present').length, absent: matching.filter((record) => record.status === 'Absent').length, late: matching.filter((record) => record.status === 'Late').length };
     };
     const currentWeek = Array.from({ length: 7 }, (_, index) => {
@@ -196,7 +203,7 @@ export const getUserDashboard = async (req, res) => {
     });
     const currentMonth = Array.from({ length: new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() }, (_, index) => summarizeDay(monthRecords, new Date(today.getFullYear(), today.getMonth(), index + 1)));
     const currentMonthSummary = currentMonth.reduce((summary, day) => ({ present: summary.present + day.present, absent: summary.absent + day.absent, late: summary.late + day.late }), { present: 0, absent: 0, late: 0 });
-    const currentMonthTotal = currentMonthSummary.present + currentMonthSummary.absent + currentMonthSummary.late;
+    const currentMonthTotal = today.getDate();
 
     // Recent attendance
     const recentAttendance = await Attendance.find({ userId })

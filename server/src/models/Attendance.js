@@ -24,6 +24,11 @@ const attendanceSchema = new mongoose.Schema(
       required: [true, 'Please provide date'],
       default: () => new Date().setHours(0, 0, 0, 0),
     },
+    attendanceDate: {
+      type: String,
+      match: /^\d{4}-\d{2}-\d{2}$/,
+      default: null,
+    },
     checkInTime: {
       type: String,
       required: [true, 'Please provide check-in time'],

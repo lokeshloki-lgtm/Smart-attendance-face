@@ -93,16 +93,17 @@ const FaceCapture = ({ onCapture, onReset, disabled = false, resetKey = 0, showR
       scanInProgressRef.current = true;
       try {
         const detectorOptions = new faceapi.TinyFaceDetectorOptions();
-        const faceDetections = await faceapi.detectAllFaces(video, detectorOptions);
-        const hasInvalidBox = faceDetections.some(({ box }) => (
+        const detections = await faceapi.detectAllFaces(video, detectorOptions).withFaceLandmarks().withFaceDescriptors();
+        const hasInvalidBox = detections.some(({ detection }) => {
+          const { box } = detection;
+          return (
           !box
           || ![box.x, box.y, box.width, box.height].every(Number.isFinite)
           || box.width <= 0
           || box.height <= 0
-        ));
+          );
+        });
         if (hasInvalidBox) return;
-
-        const detections = await faceapi.detectAllFaces(video, detectorOptions).withFaceLandmarks().withFaceDescriptors();
         if (cancelled) return;
         if (detections.length !== 1) {
           setError(detections.length === 0 ? 'No face detected. Keep one face clearly visible inside the frame.' : 'Multiple faces detected. Only one face may be captured.');
@@ -123,7 +124,7 @@ const FaceCapture = ({ onCapture, onReset, disabled = false, resetKey = 0, showR
         if (!continuous) setCapturedImage(image);
         onCaptureRef.current?.({ descriptor: Array.from(detection.descriptor), image, samples: [{ descriptor: Array.from(detection.descriptor), image, detectionScore: detection.detection.score }], detectionConfidence: detection.detection.score, detectedFaceCount: 1 });
       } catch (detectionError) {
-        if (!cancelled) console.debug('[FaceCapture] skipped invalid camera frame', { message: detectionError.message });
+        if (!cancelled && import.meta.env.DEV) console.debug('[FaceCapture] skipped invalid camera frame', { message: detectionError.message });
       } finally {
         scanInProgressRef.current = false;
       }
@@ -149,11 +150,11 @@ const FaceCapture = ({ onCapture, onReset, disabled = false, resetKey = 0, showR
     <Card className="overflow-hidden border border-gray-200 p-0 dark:border-slate-800">
       <div className="relative aspect-video bg-slate-950">
         {!disabled && <Webcam key={cameraKey} ref={webcamRef} audio={false} screenshotFormat="image/jpeg" videoConstraints={videoConstraints} onUserMedia={() => setVideoReady(true)} onLoadedMetadata={() => setVideoReady(true)} onUserMediaError={() => { setRestarting(false); setError('Camera could not be restarted. Allow camera access, then click Refresh Camera to try again.'); }} className="h-full w-full object-cover" />}
-        {!disabled && <div className="pointer-events-none absolute inset-0 flex items-center justify-center"><div className="h-3/5 w-2/5 rounded-[45%] border-2 border-emerald-300 shadow-[0_0_0_999px_rgba(15,23,42,0.3)]" /></div>}
+        {!disabled && <div className="pointer-events-none absolute inset-0 flex items-center justify-center"><div className="face-scan-frame h-3/5 w-2/5 rounded-[45%] border-2 border-emerald-300 shadow-[0_0_0_999px_rgba(15,23,42,0.3)]"><span className="face-scan-line" /></div></div>}
       </div>
       <div className="space-y-3 p-4">
-        <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">{loadingModels || restarting ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}<span>{loadingModels ? 'Loading face recognition...' : restarting ? 'Restarting camera...' : capturedImage ? 'Face detected. Verifying identity...' : 'Position your face inside the frame'}</span></div>{showRefresh && <button type="button" onClick={restartCamera} disabled={disabled || restarting} className="shrink-0 rounded-lg border border-cyan-300/30 px-3 py-2 text-xs font-semibold text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-300/10 disabled:cursor-not-allowed disabled:opacity-50">{restarting ? 'Restarting...' : '↻ Refresh Camera'}</button>}</div>
-        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{error}</p>}
+        <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">{loadingModels || restarting ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}<span>{loadingModels ? 'Loading face recognition...' : restarting ? 'Restarting camera...' : capturedImage ? 'Face detected. Verifying identity...' : 'Position your face inside the frame'}</span></div>{showRefresh && <button type="button" onClick={restartCamera} disabled={disabled || restarting} className="shrink-0 rounded-lg border border-cyan-300/30 px-3 py-2 text-xs font-semibold text-cyan-200 transition duration-200 hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-cyan-300/10 disabled:cursor-not-allowed disabled:opacity-50">{restarting ? 'Restarting...' : 'Refresh Camera'}</button>}</div>
+        {error && <p className="error-shake rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{error}</p>}
       </div>
     </Card>
   );

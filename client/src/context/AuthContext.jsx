@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('user', JSON.stringify(authenticatedUser));
         } catch (err) {
           if (cancelled) return;
-          console.warn('Stored authentication session is no longer valid:', err.response?.status || err.message);
+          if (import.meta.env.DEV) console.warn('Stored authentication session is no longer valid:', err.response?.status || err.message);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
         } finally {

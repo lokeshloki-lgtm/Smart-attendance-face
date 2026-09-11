@@ -55,10 +55,10 @@ export const getMonthlyAnalytics = async (req, res) => {
 
     for (let month = 0; month < 12; month++) {
       const monthStart = new Date(year, month, 1);
-      const monthEnd = new Date(year, month + 1, 0);
+      const monthEnd = new Date(year, month + 1, 1);
 
       const attendance = await Attendance.find({
-        date: { $gte: monthStart, $lte: monthEnd },
+        date: { $gte: monthStart, $lt: monthEnd },
       });
 
       const present = attendance.filter((a) => a.status === 'Present').length;

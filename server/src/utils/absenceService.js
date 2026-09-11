@@ -13,6 +13,13 @@ const getClosedDate = (absentTime) => {
   return date;
 };
 
+const localDateKey = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const markAbsentStudents = async (targetDate) => {
   const attendanceWindow = await getAttendanceWindow();
   const resolvedTargetDate = targetDate || getClosedDate(attendanceWindow.absentTime);
@@ -36,6 +43,7 @@ export const markAbsentStudents = async (targetDate) => {
           name: student.name,
           rollNumber: student.studentId || student.employeeId || null,
           date: resolvedTargetDate,
+          attendanceDate: localDateKey(resolvedTargetDate),
           checkInTime: '--:--:--',
           time: '--:--:--',
           status: 'Absent',
@@ -59,7 +67,7 @@ export const markAbsentStudents = async (targetDate) => {
     }
   }
 
-  return { checked: students.length, created, date: resolvedTargetDate.toISOString().split('T')[0] };
+  return { checked: students.length, created, date: localDateKey(resolvedTargetDate) };
 };
 
 export const startAbsenceScheduler = () => {

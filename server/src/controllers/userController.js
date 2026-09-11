@@ -14,6 +14,98 @@ import {
 } from '../utils/faceMatching.js';
 import { saveProfilePhoto } from '../utils/profilePhoto.js';
 
+const localDateKey = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const serializeAttendance = (record) => ({
+  ...record.toObject(),
+  attendanceDate: record.attendanceDate || localDateKey(record.date),
+});
+
+export const getTeacherStudents = async (req, res) => {
+  try {
+    const { search, department, sort = 'name', order = 'asc' } = req.query;
+    const query = { isActive: true, role: { $in: ['STUDENT', 'USER'] } };
+    if (department && department !== 'all') query.department = department;
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { studentId: { $regex: search, $options: 'i' } },
+        { className: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const allowedSorts = { name: 'name', rollNumber: 'studentId', course: 'className', department: 'department', joined: 'createdAt' };
+    const sortField = allowedSorts[sort] || 'name';
+    const direction = order === 'desc' ? -1 : 1;
+    const students = await User.find(query)
+      .select('-password -faceDescriptor -faceDescriptors -faceEmbedding')
+      .sort({ [sortField]: direction, _id: 1 })
+      .lean();
+
+    const studentIds = students.map((student) => student._id);
+    const attendance = await Attendance.find({ userId: { $in: studentIds } }).select('userId status date attendanceDate');
+    const statsByUser = new Map();
+    attendance.forEach((record) => {
+      const key = String(record.userId);
+      const stats = statsByUser.get(key) || { present: 0, late: 0, absent: 0, total: 0 };
+      if (record.status === 'Present') stats.present += 1;
+      if (record.status === 'Late') stats.late += 1;
+      if (record.status === 'Absent') stats.absent += 1;
+      stats.total += 1;
+      statsByUser.set(key, stats);
+    });
+
+    const data = students.map((student) => {
+      const stats = statsByUser.get(String(student._id)) || { present: 0, late: 0, absent: 0, total: 0 };
+      return {
+        ...student,
+        attendance: {
+          ...stats,
+          percentage: stats.total ? Number((((stats.present + stats.late) / stats.total) * 100).toFixed(2)) : 0,
+        },
+      };
+    });
+
+    res.status(200).json({ success: true, data, departments: [...new Set(students.map((student) => student.department).filter(Boolean))].sort() });
+  } catch (error) {
+    console.error('Get teacher students error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Failed to fetch teacher student directory' });
+  }
+};
+
+export const getTeacherStudentAttendance = async (req, res) => {
+  try {
+    const student = await User.findOne({ _id: req.params.id, isActive: true, role: { $in: ['STUDENT', 'USER'] } })
+      .select('-password -faceDescriptor -faceDescriptors -faceEmbedding')
+      .lean();
+    if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
+
+    const records = await Attendance.find({ userId: student._id }).sort({ date: -1, checkInTime: -1 });
+    const summary = records.reduce((result, record) => {
+      result[record.status.toLowerCase()] += 1;
+      return result;
+    }, { present: 0, late: 0, absent: 0 });
+    const total = records.length;
+    res.status(200).json({
+      success: true,
+      data: {
+        student,
+        summary: { ...summary, total, percentage: total ? Number((((summary.present + summary.late) / total) * 100).toFixed(2)) : 0 },
+        records: records.map(serializeAttendance),
+      },
+    });
+  } catch (error) {
+    console.error('Get teacher student attendance error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Failed to fetch student attendance' });
+  }
+};
+
 export const getAllUsers = async (req, res) => {
   try {
     const { page = 1, limit = 10, search, role, department, status } = req.query;
@@ -74,11 +166,11 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    if (req.user.role !== 'ADMIN' && req.user._id !== req.params.id) {
+    if (req.user.role !== 'ADMIN' && String(req.user._id) !== String(req.params.id)) {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
 
-    const user = await User.findById(req.params.id).select('-password -faceDescriptor');
+    const user = await User.findById(req.params.id).select('-password -faceDescriptor -faceDescriptors -faceEmbedding -faceImage');
 
     if (!user) {
       return res.status(404).json({
@@ -232,7 +324,7 @@ export const updateUser = async (req, res) => {
 
     await user.save();
 
-    const safeUser = await User.findById(req.params.id).select('-password -faceDescriptor');
+    const safeUser = await User.findById(req.params.id).select('-password -faceDescriptor -faceDescriptors -faceEmbedding -faceImage');
 
     res.status(200).json({
       success: true,
@@ -393,7 +485,7 @@ export const findUserByFaceDescriptor = async (req, res) => {
       query._id = req.user._id;
     }
 
-    const users = await User.find(query).select('-password');
+    const users = await User.find(query).select('-password -faceDescriptor -faceDescriptors -faceEmbedding -faceImage');
 
     const validUsers = users.filter((user) => getUserFaceDescriptors(user).length > 0);
 
@@ -465,7 +557,7 @@ export const findUserByFaceDescriptor = async (req, res) => {
 
 export const getAttendanceStats = async (req, res) => {
   try {
-    if (req.user.role !== 'ADMIN' && req.user._id !== req.params.id) {
+    if (req.user.role !== 'ADMIN' && String(req.user._id) !== String(req.params.id)) {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
     const userId = req.params.id;

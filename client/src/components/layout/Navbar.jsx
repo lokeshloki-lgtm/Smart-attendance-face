@@ -28,6 +28,7 @@ const Navbar = () => {
                   <LayoutDashboard size={16} /> Dashboard
                 </Link>
                 {user?.role === 'ADMIN' && <div className="hidden items-center gap-2 md:flex"><Link to="/users" className="text-sm text-[#24566f] hover:text-cyan-500 dark:text-[#b9d6cf]"><Users size={15} /></Link><Link to="/departments" className="text-sm text-[#24566f] hover:text-cyan-500 dark:text-[#b9d6cf]"><Building2 size={15} /></Link><Link to="/settings" className="text-sm text-[#24566f] hover:text-cyan-500 dark:text-[#b9d6cf]"><Settings size={15} /></Link></div>}
+                {user?.role === 'TEACHER' && <Link to="/teacher/students" className="hidden items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#24566f] transition hover:bg-[#dcecf1] md:flex dark:text-[#b9d6cf] dark:hover:bg-white/10"><Users size={16} /> Students</Link>}
                 <span className="hidden border-l border-[#d5e1e6] pl-4 text-sm text-[#61788a] sm:inline dark:border-white/10 dark:text-[#afbfbe]">
                   Welcome, {user?.name}
                 </span>
